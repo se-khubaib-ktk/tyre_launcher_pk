@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tyre Launch - Pakistani Bati</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    body, html {
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+    #w{
+      width:100vw;
+      height:100vh;
+      position:relative;
+      overflow:hidden;
+      cursor:pointer;
+      user-select:none;
+      font-family: 'Press Start 2P', cursive;
+    }
+    #c{position:absolute;top:0;left:0}
+
+    /* ui already defined in .b block above */
+    .b{
+      background:rgba(0,0,0,0.7);
+      color:#fff;
+      font:600 clamp(7px,2vw,13px) 'Press Start 2P', cursive;
+      padding:clamp(5px,1.5vw,8px) clamp(8px,2vw,14px);
+      border-radius:8px;
+      text-shadow:0 3px 6px rgba(0,0,0,0.9);
+      letter-spacing:1px;
+      border:2px solid rgba(255,255,255,0.2);
+      white-space:nowrap;
+    }
+
+    #ui{
+      position:absolute;
+      top:8px;
+      left:0;right:0;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:0 10px;
+      pointer-events:none;
+      z-index:10;
+      gap:4px;
+    }
+    
+    #pbarwrap{
+      position:absolute;
+      bottom:clamp(70px,12vh,120px);
+      left:clamp(10px,2vw,18px);
+      pointer-events:none;
+      z-index:10;
+      font-family: 'Press Start 2P', cursive;
+    }
+    #pbarlabel{
+      color:#fff;
+      font:700 clamp(7px,1.8vw,12px) 'Press Start 2P', cursive;
+      text-align:center;
+      margin-bottom:4px;
+      text-shadow:0 2px 5px #000;
+      letter-spacing:1px;
+    }
+    #pbarbg{
+      width:clamp(14px,3vw,18px);
+      height:clamp(80px,14vh,120px);
+      background:rgba(0,0,0,0.7);
+      border-radius:8px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column-reverse;
+      border:3px solid rgba(255,255,255,0.35);
+      box-shadow:0 0 10px rgba(0,0,0,0.6);
+    }
+    #pbarfill{
+      width:100%;
+      height:0%;
+      background:linear-gradient(to top, #4ade80, #22c55e);
+      border-radius:5px;
+      transition:background 0.1s;
+    }
+
+    #msg{
+      position:absolute;
+      top:42%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      background:rgba(0,0,0,0.92);
+      color:#fff;
+      border-radius:16px;
+      padding:clamp(14px,3vw,20px) clamp(16px,5vw,36px);
+      font:700 clamp(11px,3.5vw,20px) 'Press Start 2P', cursive;
+      text-align:center;
+      line-height:1.6;
+      display:none;
+      pointer-events:none;
+      text-shadow:0 3px 8px #000;
+      border:4px solid #ffd700;
+      box-shadow:0 0 30px rgba(255,215,0,0.6);
+      width:clamp(240px,80vw,480px);
+    }
+
+    #hint{
+      position:absolute;
+      bottom:clamp(28px,5vh,42px);
+      left:50%;
+      transform:translateX(-50%);
+      color:rgba(255,255,255,0.75);
+      font:400 clamp(6px,1.6vw,9px) 'Press Start 2P', cursive;
+      text-align:center;
+      text-shadow:0 1px 4px #000;
+      pointer-events:none;
+      z-index:15;
+      letter-spacing:1px;
+      white-space:nowrap;
+    }
+
+    #credit{
+      position:absolute;
+      bottom:8px;
+      left:50%;
+      transform:translateX(-50%);
+      color:rgba(255,255,255,0.5);
+      font:400 clamp(5px,1.3vw,8px) 'Press Start 2P', cursive;
+      text-align:center;
+      text-shadow:0 1px 4px #000;
+      pointer-events:none;
+      z-index:15;
+      letter-spacing:1px;
+    }
+
+    /* Mobile portrait — tighter UI */
+    @media (max-width:480px){
+      #ui { top:6px; padding:0 6px; gap:3px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Add this right after <body> -->
+<div id="mobile-warning" style="
+  display: none;
+  background: #ff4444;
+  color: white;
+  text-align: center;
+  padding: 12px;
+  font-family: sans-serif;
+  font-size: 14px;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 9999;
+">
+  ⚠️ This game is designed for <strong>desktop only</strong>. 
+  Mobile devices are not supported. For the best experience, 
+  please play on a computer.
+</div>
+
+<script>
+  // Show warning on mobile screens
+  if (window.innerWidth < 768 || /Mobi|Android/i.test(navigator.userAgent)) {
+    document.getElementById('mobile-warning').style.display = 'block';
+    document.body.style.marginTop = '50px'; // prevent overlap
+  }
+</script>
+
+<div id="w">
+  <div id="ui">
+    <div class="b">SCORE: <span id="sc">0</span></div>
+    <div class="b" id="rnd">ROUND 1 / 5</div>
+    <div class="b">BEST: <span id="bt">0</span></div>
+  </div>
+  
+  <canvas id="c"></canvas>
+
+  <div id="pbarwrap">
+    <div id="pbarlabel">POWER</div>
+    <div id="pbarbg"><div id="pbarfill"></div></div>
+  </div>
+
+  <div id="msg"></div>
+  
+  <div id="hint">HOLD TO CHARGE · RELEASE TO LAUNCH</div>
+  <div id="credit">DEVELOPED BY KHUBAIB KHATTAK</div>
+</div>
+
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d'),wrap=document.getElementById('w');
+let W,H,GY;
+
+// Scaled game constants — recalculated on resize
+let ENG_X, ENG_R, RAMP_X, BATI_X, RAMP_LEN, RAMP_ANGLE;
+
+function resize(){
+  W=wrap.clientWidth;
+  H=wrap.clientHeight;
+  cv.width=W;
+  cv.height=H;
+  GY=H - Math.max(60, H*0.11);
+
+  // Scale all positions relative to screen width
+  const s = Math.min(W, 600) / 420; // scale factor, capped
+  ENG_R   = Math.round(22 * s);
+  ENG_X   = Math.round(60 * s);
+  RAMP_X  = Math.round(260 * s);
+  RAMP_LEN= Math.round(85 * s);
+  RAMP_ANGLE = 36;
+  BATI_X  = W - Math.round(70 * s);
+
+  // Update tyre size too
+  tyre.r = Math.round(11 * s);
+  batiHoleR = Math.round(14 * s);
+
+  // Reset positions without restarting round
+  engY = GY - 18;
+  rampY = GY;
+  if(!tyre.active && !tyre.landed){
+    tyre.x=ENG_X; tyre.y=engY-5;
+  }
+}
+
+const G=0.26;
+let score=0,best=0,round=1,maxR=5,state='aiming';
+let power=0,pDir=1,charging=false;
+let particles=[],scoreAnims=[];
+
+let engY, rampY;
+let batiH=110;
+let batiHoleR=14;
+
+const BATI_X_FIXED=()=>BATI_X;
+
+let tyre={x:0,y:0,vx:0,vy:0,r:11,rot:0,active:false,landed:false,hitRamp:false,onGround:false,wallBounces:0};
+let engRot=0;
+let smokeOffset=0;
+
+// Must init after resize sets constants
+resize();
+window.addEventListener('resize', ()=>{ resize(); });
+
+function newRound(){
+  const minH = GY * 0.25;
+  const maxH = GY * 0.60;
+  batiH = minH + Math.random() * (maxH - minH);
+  resetTyre();
+}
+function resetTyre(){
+  engY=GY-18;
+  rampY=GY;
+  tyre.x=ENG_X; tyre.y=engY-5;
+  tyre.vx=0;tyre.vy=0;tyre.rot=0;
+  tyre.active=false;tyre.landed=false;tyre.hitRamp=false;tyre.onGround=false;tyre.wallBounces=0;
+  power=0;pDir=1;charging=false;
+  document.getElementById('pbarfill').style.height='0%';
+}
+newRound();
+
+function getRampTip(){
+  const ang=RAMP_ANGLE*Math.PI/180;
+  return { x: RAMP_X + Math.cos(ang)*RAMP_LEN, y: rampY - Math.sin(ang)*RAMP_LEN };
+}
+
+function drawSky(){
+  const grad = ctx.createLinearGradient(0,0,0,GY*0.75);
+  grad.addColorStop(0, '#0f2b4a');
+  grad.addColorStop(0.4, '#1e5a8c');
+  grad.addColorStop(0.7, '#3a9ad1');
+  grad.addColorStop(1, '#7bc6f0');
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,0,W,GY);
+
+  ctx.fillStyle='rgba(255,255,255,0.22)';
+  [[W*0.1,68,52],[W*0.28,52,44],[W*0.72,78,58],[W*0.55,45,38]].forEach(([cx,cy,r])=>{
+    ctx.beginPath();ctx.ellipse(cx,cy,r,r*0.38,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(cx+r*0.6,cy-r*0.18,r*0.65,r*0.35,0,0,Math.PI*2);ctx.fill();
+  });
+
+  ctx.fillStyle='#1e4a2e';
+  ctx.beginPath();
+  ctx.moveTo(0,GY);
+  for(let x=0;x<=W;x+=38){
+    ctx.lineTo(x, GY - 48 - Math.sin(x*0.018)*36 - Math.cos(x*0.031)*22);
+  }
+  ctx.lineTo(W,GY);ctx.fill();
+
+  ctx.fillStyle='#2a5f38';
+  ctx.beginPath();
+  ctx.moveTo(0,GY);
+  for(let x=0;x<=W;x+=42){
+    ctx.lineTo(x, GY - 32 - Math.sin(x*0.021)*28);
+  }
+  ctx.lineTo(W,GY);ctx.fill();
+}
+
+function drawGround(){
+  ctx.fillStyle='#3f2a14';
+  ctx.fillRect(0,GY,W,H-GY);
+  
+  ctx.fillStyle='#2e6b2a';
+  ctx.fillRect(0,GY,W,14);
+  
+  ctx.strokeStyle='rgba(0,0,0,0.25)';
+  ctx.lineWidth=2;
+  for(let i=1;i<7;i++){
+    ctx.beginPath();
+    ctx.moveTo(0,GY+12+i*13);
+    ctx.lineTo(W,GY+12+i*13);
+    ctx.stroke();
+  }
+}
+
+// Realistic Pakistani Bati Tower
+// - Smooth curved body (no soot/black face, no brick overhangs)
+// - Natural clay/brick colours with warm lighting
+// - Clipped brick pattern stays perfectly inside the tower shape
+function drawBati(){
+  const bx = BATI_X_FIXED();
+  const by = GY;
+  const towerHeight = batiH;
+  const sc = Math.min(W, 600) / 420;
+  const baseWidth = 50 * sc;
+  const topWidth  = 20 * sc;
+
+  // ---- geometry helpers ----
+  // The tower is a smooth trapezoid.  leftX(y) and rightX(y) give the
+  // exact edge at any canvas-y so we can clip bricks perfectly.
+  const leftX  = (y) => bx - baseWidth/2 + ((by - y) / towerHeight) * ((baseWidth - topWidth)/2 - 8);
+  const rightX = (y) => bx + baseWidth/2 - ((by - y) / towerHeight) * ((baseWidth - topWidth)/2 - 8);
+
+  ctx.save();
+
+  // ---- soft ground shadow ----
+  const shadowGrad = ctx.createRadialGradient(bx, by+4, 2, bx, by+4, baseWidth);
+  shadowGrad.addColorStop(0, 'rgba(0,0,0,0.38)');
+  shadowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = shadowGrad;
+  ctx.fillRect(bx - baseWidth, by - 2, baseWidth*2, 18);
+
+  // ---- define the tower trapezoid clip path ----
+  ctx.beginPath();
+  ctx.moveTo(bx - topWidth/2 - 1, by - towerHeight);
+  ctx.lineTo(bx + topWidth/2 + 1, by - towerHeight);
+  ctx.lineTo(bx + baseWidth/2 + 8, by);
+  ctx.lineTo(bx - baseWidth/2 - 8, by);
+  ctx.closePath();
+  ctx.clip();
+
+  // ---- base clay fill with warm gradient ----
+  const bodyGrad = ctx.createLinearGradient(bx - baseWidth/2, 0, bx + baseWidth/2, 0);
+  bodyGrad.addColorStop(0,   '#7A3D1A');
+  bodyGrad.addColorStop(0.25,'#A85528');
+  bodyGrad.addColorStop(0.5, '#C96B3A');
+  bodyGrad.addColorStop(0.75,'#B05E30');
+  bodyGrad.addColorStop(1,   '#7A3D1A');
+  ctx.fillStyle = bodyGrad;
+  ctx.fillRect(bx - baseWidth/2 - 10, by - towerHeight - 4, baseWidth + 20, towerHeight + 8);
+
+  // ---- warm highlight stripe on left face ----
+  const hlGrad = ctx.createLinearGradient(bx - baseWidth/2, 0, bx, 0);
+  hlGrad.addColorStop(0,   'rgba(255,180,100,0.13)');
+  hlGrad.addColorStop(0.5, 'rgba(255,180,100,0.06)');
+  hlGrad.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = hlGrad;
+  ctx.fillRect(bx - baseWidth/2 - 10, by - towerHeight, baseWidth + 20, towerHeight);
+
+  // ---- brick pattern (rows clipped inside tower shape) ----
+  const bH = 12;
+  const numRows = Math.ceil(towerHeight / bH) + 1;
+  ctx.strokeStyle = 'rgba(50,22,8,0.55)';
+  ctx.lineWidth = 1.2;
+
+  for(let row = 0; row < numRows; row++){
+    const rowProgress = row / numRows;
+    const y = by - towerHeight + row * bH;
+
+    // width at this row's midpoint
+    const lx = leftX(y + bH/2);
+    const rx = rightX(y + bH/2);
+    const rowW = rx - lx;
+    if(rowW <= 0) continue;
+
+    const bW = Math.max(rowW / 4, 6);
+    const offset = (row % 2 === 0) ? 0 : bW * 0.5;
+    const startCol = Math.floor((lx - bx) / bW) - 1;
+    const endCol   = Math.ceil((rx - bx) / bW) + 1;
+
+    for(let col = startCol; col <= endCol; col++){
+      const bx0 = bx + col * bW - offset;
+      const by0 = y;
+      // clamp to tower edges — no overhang ever
+      const clampL = Math.max(bx0,       lx + 0.5);
+      const clampR = Math.min(bx0 + bW,  rx - 0.5);
+      if(clampR - clampL < 1.5) continue;
+
+      const shade = ((row + col) % 2 === 0) ? 0.07 : -0.05;
+      ctx.fillStyle = `rgba(${shade>0?'255,200,140':'0,0,0'},${Math.abs(shade)})`;
+      ctx.fillRect(clampL, by0 + 1, clampR - clampL, bH - 2);
+      ctx.strokeRect(clampL, by0 + 1, clampR - clampL, bH - 2);
+    }
+  }
+
+  ctx.restore(); // ← removes clip
+
+  // ---- chimney top rim (outside clip so it sits on top cleanly) ----
+  const rimW = topWidth + 10;
+  const rimH = 14;
+  const rimY = by - towerHeight - rimH + 2;
+  const rimX = bx - rimW/2;
+
+  // rim body
+  const rimGrad = ctx.createLinearGradient(rimX, 0, rimX + rimW, 0);
+  rimGrad.addColorStop(0,   '#6B3214');
+  rimGrad.addColorStop(0.5, '#9E4E25');
+  rimGrad.addColorStop(1,   '#6B3214');
+  ctx.fillStyle = rimGrad;
+  ctx.beginPath();
+  ctx.roundRect(rimX, rimY, rimW, rimH, 3);
+  ctx.fill();
+  ctx.strokeStyle = '#4A2210';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // chimney opening (warm dark interior, NOT solid black)
+  const holeW = topWidth - 4;
+  const holeH = rimH - 4;
+  const holeX = bx - holeW/2;
+  const holeY = rimY + 2;
+  const holeGrad = ctx.createRadialGradient(bx, holeY + holeH*0.4, 1, bx, holeY + holeH*0.4, holeW*0.7);
+  holeGrad.addColorStop(0, '#1A0A04');
+  holeGrad.addColorStop(1, '#3D1A0A');
+  ctx.fillStyle = holeGrad;
+  ctx.beginPath();
+  ctx.ellipse(bx, holeY + holeH/2, holeW/2, holeH/2, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // ---- animated smoke (grey/white, not black) ----
+  const smokeBaseY = rimY - 6;
+  const s = smokeOffset;
+  ctx.save();
+
+  ctx.globalAlpha = 0.55;
+  ctx.fillStyle = '#b0b0b0';
+  ctx.beginPath();
+  ctx.ellipse(bx + Math.sin(s*0.11)*4,   smokeBaseY - (s%90)*0.9,    18, 10,  0,     0, Math.PI*2); ctx.fill();
+
+  ctx.globalAlpha = 0.40;
+  ctx.fillStyle = '#c8c8c8';
+  ctx.beginPath();
+  ctx.ellipse(bx - 5 + Math.cos(s*0.08)*6, smokeBaseY - 36 - (s%115)*1.05, 24, 13, -0.3, 0, Math.PI*2); ctx.fill();
+
+  ctx.globalAlpha = 0.28;
+  ctx.fillStyle = '#d8d8d8';
+  ctx.beginPath();
+  ctx.ellipse(bx + 7,                    smokeBaseY - 74 - (s%140)*1.18, 18, 12,  0.2, 0, Math.PI*2); ctx.fill();
+
+  ctx.globalAlpha = 0.15;
+  ctx.fillStyle = '#e5e5e5';
+  ctx.beginPath();
+  ctx.ellipse(bx - 8 + Math.sin(s*0.17)*10, smokeBaseY - 112 - (s%170)*1.3, 30, 15, -0.15, 0, Math.PI*2); ctx.fill();
+
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// Realistic ladder leaning at RAMP_ANGLE, with proper rungs + stick person holding it
+function drawRamp(){
+  const ang = RAMP_ANGLE * Math.PI / 180;
+  const cosA = Math.cos(ang), sinA = Math.sin(ang);
+  const len = RAMP_LEN;
+  const sc  = len / 85; // scale for ladder width/rungs
+
+  // Ladder rail width (gap between the two side rails)
+  const railGap = 18 * sc;
+  const railThick = 5 * sc;
+
+  // The two rails run from (RAMP_X, rampY) to tip, offset perpendicular
+  // perpendicular unit vector (points "left" of ladder direction)
+  const px = sinA, py = cosA; // perpendicular to ladder direction
+
+  // Rail A (left), Rail B (right)
+  const rAx0 = RAMP_X - px * railGap/2,  rAy0 = rampY - py * railGap/2;
+  const rBx0 = RAMP_X + px * railGap/2,  rBy0 = rampY + py * railGap/2;
+  const rAx1 = rAx0 + cosA * len,         rAy1 = rAy0 - sinA * len;
+  const rBx1 = rBx0 + cosA * len,         rBy1 = rBy0 - sinA * len;
+
+  ctx.save();
+
+  // ---- shadow under ladder ----
+  ctx.strokeStyle = 'rgba(0,0,0,0.22)';
+  ctx.lineWidth   = railThick + 6;
+  ctx.lineCap     = 'round';
+  ctx.beginPath(); ctx.moveTo(rAx0+3, rAy0+4); ctx.lineTo(rAx1+3, rAy1+4); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(rBx0+3, rBy0+4); ctx.lineTo(rBx1+3, rBy1+4); ctx.stroke();
+
+  // ---- draw rails ----
+  const railGrad = ctx.createLinearGradient(rAx0, rAy0, rAx1, rAy1);
+  railGrad.addColorStop(0,   '#7a4010');
+  railGrad.addColorStop(0.4, '#b86828');
+  railGrad.addColorStop(1,   '#8a4e18');
+
+  ctx.strokeStyle = railGrad;
+  ctx.lineWidth   = railThick;
+  ctx.lineCap     = 'round';
+  ctx.beginPath(); ctx.moveTo(rAx0, rAy0); ctx.lineTo(rAx1, rAy1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(rBx0, rBy0); ctx.lineTo(rBx1, rBy1); ctx.stroke();
+
+  // Rail edge highlight
+  ctx.strokeStyle = 'rgba(255,200,120,0.25)';
+  ctx.lineWidth   = 1.5;
+  ctx.beginPath(); ctx.moveTo(rAx0, rAy0); ctx.lineTo(rAx1, rAy1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(rBx0, rBy0); ctx.lineTo(rBx1, rBy1); ctx.stroke();
+
+  // ---- draw rungs ----
+  const rungCount = Math.floor(len / (13 * sc));
+  const rungGap   = len / (rungCount + 1);
+
+  for(let i = 1; i <= rungCount; i++){
+    const t = i * rungGap / len; // 0..1 along ladder
+    const cx = RAMP_X + cosA * i * rungGap;
+    const cy = rampY  - sinA * i * rungGap;
+
+    // rung endpoints
+    const rx0 = cx - px * (railGap/2 + railThick*0.3);
+    const ry0 = cy - py * (railGap/2 + railThick*0.3);
+    const rx1 = cx + px * (railGap/2 + railThick*0.3);
+    const ry1 = cy + py * (railGap/2 + railThick*0.3);
+
+    // rung shadow
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth   = 5 * sc;
+    ctx.lineCap     = 'butt';
+    ctx.beginPath(); ctx.moveTo(rx0+2, ry0+2); ctx.lineTo(rx1+2, ry1+2); ctx.stroke();
+
+    // rung body (slightly darker wood)
+    const rungGrad2 = ctx.createLinearGradient(rx0, ry0, rx1, ry1);
+    rungGrad2.addColorStop(0,   '#6a3808');
+    rungGrad2.addColorStop(0.5, '#a86020');
+    rungGrad2.addColorStop(1,   '#6a3808');
+    ctx.strokeStyle = rungGrad2;
+    ctx.lineWidth   = 4.5 * sc;
+    ctx.beginPath(); ctx.moveTo(rx0, ry0); ctx.lineTo(rx1, ry1); ctx.stroke();
+
+    // rung highlight
+    ctx.strokeStyle = 'rgba(255,210,130,0.22)';
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath(); ctx.moveTo(rx0, ry0); ctx.lineTo(rx1, ry1); ctx.stroke();
+
+    // bolt dots on each end
+    [rx0, rx1].forEach((bx, bi) => {
+      const by2 = bi===0 ? ry0 : ry1;
+      ctx.fillStyle = '#4a2a08';
+      ctx.beginPath(); ctx.arc(bx, by2, 2.5*sc, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#c8a060';
+      ctx.beginPath(); ctx.arc(bx-0.5*sc, by2-0.5*sc, 1.2*sc, 0, Math.PI*2); ctx.fill();
+    });
+  }
+
+  // ---- ground feet of ladder ----
+  ctx.fillStyle = '#5a3010';
+  ctx.beginPath(); ctx.arc(rAx0, rAy0, 4*sc, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(rBx0, rBy0, 4*sc, 0, Math.PI*2); ctx.fill();
+
+  ctx.restore();
+
+  // ---- PERSON standing upright, gripping the ladder rail ----
+  // Stands to the right of the ladder base, body upright, both hands on the near rail
+  const sc2 = Math.max(0.6, sc * 0.95);
+
+  // Person stands just to the right of rail B base
+  const bodyX   = rBx0 + 20 * sc2;
+  const feetY   = GY - 2;
+  const headR   = 8 * sc2;
+  const legH    = 26 * sc2;
+  const torsoH  = 22 * sc2;
+  const hipY    = feetY - legH;
+  const shouldY = hipY  - torsoH;
+  const neckY   = shouldY;
+  const headCY  = neckY - headR - 1;
+
+  // Grip point on the near rail (rBx at about waist height)
+  const gripT   = 0.28; // fraction up the ladder
+  const gripX   = rBx0 + cosA * RAMP_LEN * gripT;
+  const gripY   = rBy0 - sinA * RAMP_LEN * gripT;
+
+  ctx.save();
+  ctx.lineCap = 'round';
+
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath();
+  ctx.ellipse(bodyX, feetY + 3, headR * 1.3, 4, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // --- legs (cream shalwar) ---
+  ctx.strokeStyle = '#ddd5bb';
+  ctx.lineWidth = 5.5 * sc2;
+  // left leg straight down
+  ctx.beginPath(); ctx.moveTo(bodyX - 3*sc2, hipY); ctx.lineTo(bodyX - 6*sc2, feetY); ctx.stroke();
+  // right leg straight down
+  ctx.beginPath(); ctx.moveTo(bodyX + 3*sc2, hipY); ctx.lineTo(bodyX + 6*sc2, feetY); ctx.stroke();
+
+  // feet / sandals
+  ctx.strokeStyle = '#5a3010';
+  ctx.lineWidth = 3 * sc2;
+  ctx.beginPath(); ctx.moveTo(bodyX - 10*sc2, feetY); ctx.lineTo(bodyX - 2*sc2, feetY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bodyX + 2*sc2,  feetY); ctx.lineTo(bodyX + 10*sc2, feetY); ctx.stroke();
+
+  // --- torso (blue kameez) ---
+  ctx.strokeStyle = '#1e4a9a';
+  ctx.lineWidth = 9 * sc2;
+  ctx.beginPath(); ctx.moveTo(bodyX, shouldY); ctx.lineTo(bodyX, hipY); ctx.stroke();
+  // subtle highlight on left side of shirt
+  ctx.strokeStyle = 'rgba(100,160,255,0.2)';
+  ctx.lineWidth = 3 * sc2;
+  ctx.beginPath(); ctx.moveTo(bodyX - 2*sc2, shouldY); ctx.lineTo(bodyX - 2*sc2, hipY); ctx.stroke();
+
+  // --- LEFT arm: reaching across to grip the rail ---
+  // Upper arm goes left and slightly down from shoulder
+  const elbowX = bodyX - 16*sc2;
+  const elbowY = shouldY + 10*sc2;
+  // sleeve (shirt fabric)
+  ctx.strokeStyle = '#1e4a9a';
+  ctx.lineWidth = 6 * sc2;
+  ctx.beginPath(); ctx.moveTo(bodyX - 3*sc2, shouldY + 3*sc2); ctx.lineTo(elbowX, elbowY); ctx.stroke();
+  // forearm skin
+  ctx.strokeStyle = '#d4904a';
+  ctx.lineWidth = 4 * sc2;
+  ctx.beginPath(); ctx.moveTo(elbowX, elbowY); ctx.lineTo(gripX, gripY); ctx.stroke();
+
+  // --- RIGHT arm: also gripping the rail slightly higher ---
+  const grip2T  = 0.42;
+  const grip2X  = rBx0 + cosA * RAMP_LEN * grip2T;
+  const grip2Y  = rBy0 - sinA * RAMP_LEN * grip2T;
+  const elbow2X = bodyX + 10*sc2;
+  const elbow2Y = shouldY + 8*sc2;
+  ctx.strokeStyle = '#1e4a9a';
+  ctx.lineWidth = 6 * sc2;
+  ctx.beginPath(); ctx.moveTo(bodyX + 3*sc2, shouldY + 3*sc2); ctx.lineTo(elbow2X, elbow2Y); ctx.stroke();
+  ctx.strokeStyle = '#d4904a';
+  ctx.lineWidth = 4 * sc2;
+  ctx.beginPath(); ctx.moveTo(elbow2X, elbow2Y); ctx.lineTo(grip2X, grip2Y); ctx.stroke();
+
+  // small fist circles at grip points
+  ctx.fillStyle = '#d4904a';
+  ctx.beginPath(); ctx.arc(gripX,  gripY,  3.5*sc2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(grip2X, grip2Y, 3.5*sc2, 0, Math.PI*2); ctx.fill();
+
+  // --- neck ---
+  ctx.strokeStyle = '#d4904a';
+  ctx.lineWidth = 4.5 * sc2;
+  ctx.beginPath(); ctx.moveTo(bodyX, neckY); ctx.lineTo(bodyX, headCY + headR); ctx.stroke();
+
+  // --- head ---
+  ctx.fillStyle = '#d4904a';
+  ctx.strokeStyle = '#a86828';
+  ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.arc(bodyX, headCY, headR, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+
+  // hair
+  ctx.fillStyle = '#160800';
+  ctx.beginPath(); ctx.arc(bodyX, headCY - headR*0.05, headR * 0.97, Math.PI * 1.05, 0.02); ctx.fill();
+
+  // eyes (looking left toward ladder)
+  ctx.fillStyle = '#160800';
+  ctx.beginPath(); ctx.arc(bodyX - headR*0.32, headCY - headR*0.08, 1.4*sc2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(bodyX + headR*0.12, headCY - headR*0.08, 1.4*sc2, 0, Math.PI*2); ctx.fill();
+
+  // eyebrows (slight effort/focus)
+  ctx.strokeStyle = '#2a1000';
+  ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(bodyX - headR*0.52, headCY - headR*0.32); ctx.lineTo(bodyX - headR*0.12, headCY - headR*0.38); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bodyX + headR*0.02, headCY - headR*0.38); ctx.lineTo(bodyX + headR*0.38, headCY - headR*0.30); ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawEngine(){
+  const ex=ENG_X, ey=engY;
+  
+  ctx.fillStyle='#2f2f2f'; ctx.fillRect(ex-42,ey,84,30);
+  ctx.fillStyle='#1f1f1f'; ctx.fillRect(ex-38,ey+26,76,9);
+  
+  const bodyGrad = ctx.createLinearGradient(ex-36,ey-16,ex+36,ey-16);
+  bodyGrad.addColorStop(0,'#5a5a5a');
+  bodyGrad.addColorStop(1,'#3a3a3a');
+  ctx.fillStyle=bodyGrad;
+  ctx.fillRect(ex-36,ey-16,72,22);
+  
+  ctx.fillStyle='#444'; ctx.fillRect(ex+30,ey-26,11,16);
+  ctx.fillStyle='#222';
+  ctx.beginPath();ctx.arc(ex+35,ey-26,5.5,Math.PI,0);ctx.fill();
+  
+  if(Math.sin(engRot*2.2)>0.4){
+    ctx.fillStyle='rgba(240,240,240,0.25)';
+    ctx.beginPath();ctx.arc(ex+35,ey-36,7.5,0,Math.PI*2);ctx.fill();
+  }
+
+  ctx.save();
+  ctx.translate(ex,ey-6);
+  
+  ctx.fillStyle='rgba(0,0,0,0.3)';
+  ctx.beginPath();ctx.ellipse(4,8,ENG_R+2,ENG_R*0.3,0,0,Math.PI*2);ctx.fill();
+  
+  ctx.fillStyle='#666666';
+  ctx.beginPath();ctx.arc(0,0,ENG_R+1,0,Math.PI*2);ctx.fill();
+  
+  ctx.fillStyle='#777777';
+  ctx.beginPath();ctx.arc(0,0,ENG_R,0,Math.PI*2);ctx.fill();
+  
+  ctx.strokeStyle='#333';ctx.lineWidth=4;
+  ctx.beginPath();ctx.arc(0,0,ENG_R,0,Math.PI*2);ctx.stroke();
+  
+  for(let i=0;i<8;i++){
+    ctx.save();
+    ctx.rotate(engRot + i*Math.PI/4);
+    ctx.strokeStyle='#444';
+    ctx.lineWidth=4;
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(ENG_R-6,0);ctx.stroke();
+    ctx.restore();
+  }
+  
+  ctx.fillStyle='#222';ctx.beginPath();ctx.arc(0,0,9,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#aaa';ctx.beginPath();ctx.arc(0,0,4,0,Math.PI*2);ctx.fill();
+  
+  if(!tyre.active && !tyre.landed){
+    ctx.save();ctx.rotate(tyre.rot * 1.1);
+    const tr = ENG_R * 0.62;
+    ctx.strokeStyle='#0f0f0f';ctx.lineWidth=tr*0.4;
+    ctx.beginPath();ctx.arc(0,0,tr*0.78,0,Math.PI*2);ctx.stroke();
+    
+    ctx.strokeStyle='#555';ctx.lineWidth=2.5;
+    for(let i=0;i<6;i++){
+      ctx.save();ctx.rotate(i*Math.PI*2/6);
+      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,tr*0.45);ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+function drawTyreAt(x,y,rot,r,alpha){
+  ctx.save();
+  ctx.globalAlpha = alpha || 1;
+  ctx.translate(x,y);
+  ctx.rotate(rot);
+  
+  ctx.strokeStyle = '#0a0a0a';
+  ctx.lineWidth = r * 0.42;
+  ctx.beginPath();ctx.arc(0,0,r*0.81,0,Math.PI*2);ctx.stroke();
+  
+  ctx.strokeStyle = '#2c2c2c';
+  ctx.lineWidth = r * 0.36;
+  ctx.beginPath();ctx.arc(0,0,r*0.78,0,Math.PI*2);ctx.stroke();
+  
+  ctx.strokeStyle = '#1a1a1a';
+  ctx.lineWidth = 2.2;
+  for(let i=0;i<12;i++){
+    ctx.save();
+    ctx.rotate(i*Math.PI/6);
+    ctx.beginPath();
+    ctx.moveTo(0, -r*0.72);
+    ctx.lineTo(0, -r*0.38);
+    ctx.stroke();
+    ctx.restore();
+  }
+  
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 3;
+  ctx.beginPath();ctx.arc(0,0,r*0.46,0,Math.PI*2);ctx.stroke();
+  
+  ctx.fillStyle = '#333';
+  ctx.beginPath();ctx.arc(0,0,r*0.22,0,Math.PI*2);ctx.fill();
+  
+  ctx.fillStyle = '#999';
+  ctx.beginPath();ctx.arc(0,0,r*0.11,0,Math.PI*2);ctx.fill();
+  
+  ctx.restore();
+}
+
+function drawFlyingTyre(){
+  if(!tyre.active && !tyre.landed) return;
+  if(tyre.active){
+    drawTyreAt(tyre.x, tyre.y, tyre.rot, tyre.r, 1);
+  }
+  if(tyre.landed && tyre.onGround){
+    drawTyreAt(tyre.x, tyre.y, tyre.rot, tyre.r, 0.88);
+  }
+  if(tyre.landed && !tyre.onGround && !tyre.active){
+    drawTyreAt(BATI_X_FIXED(), GY - batiH - 3, tyre.rot + 0.6, tyre.r * 0.83, 0.82);
+  }
+}
+
+function drawParticles(){
+  particles.forEach(p=>{
+    ctx.globalAlpha = p.life * 0.95;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);ctx.fill();
+  });
+  ctx.globalAlpha=1;
+}
+
+function drawScoreAnims(){
+  const now=Date.now();
+  scoreAnims=scoreAnims.filter(a=>now-a.t<1350);
+  scoreAnims.forEach(a=>{
+    const el=(now-a.t)/1350;
+    ctx.globalAlpha=1-el;
+    ctx.font=`bold ${Math.round(W*0.055)}px "Press Start 2P"`;
+    ctx.textAlign='center';
+    ctx.fillStyle=a.color;
+    ctx.fillText(a.text, a.x, a.y - el*68);
+  });
+  ctx.globalAlpha=1; ctx.textAlign='left';
+}
+
+function spawnParticles(x,y,c1,c2){
+  for(let i=0;i<26;i++){
+    particles.push({
+      x,y,
+      vx:(Math.random()-0.5)*10,
+      vy:-Math.random()*9-3,
+      r:2.5+Math.random()*5.5,
+      color: i%2===0 ? c1 : c2,
+      life:1
+    });
+  }
+}
+
+function update(){
+  engRot += 0.072;
+  smokeOffset += 2.45;                    // ← smoke animation speed
+  if(!tyre.active && !tyre.landed) tyre.rot -= 0.165;
+
+  if(charging){
+    power += 1.5 * pDir;
+    if(power >= 100){ power=100; pDir=-1; }
+    if(power <= 0){ power=0; pDir=1; }
+    const pct=power/100;
+    document.getElementById('pbarfill').style.height=power+'%';
+    document.getElementById('pbarfill').style.background = pct<0.35 ? '#4ade80' : pct<0.72 ? '#facc15' : '#ef4444';
+  }
+
+  if(tyre.active){
+    tyre.x += tyre.vx;
+    tyre.y += tyre.vy;
+    tyre.vy += G;
+    tyre.vx *= 0.999;
+    tyre.rot += tyre.vx * 0.062;
+
+    if(!tyre.hitRamp){
+      const ang=RAMP_ANGLE*Math.PI/180;
+      const tip=getRampTip();
+      const rdx=tip.x-RAMP_X, rdy=tip.y-rampY;
+      const rlen=Math.sqrt(rdx*rdx+rdy*rdy);
+      const rnx=-rdy/rlen, rny=rdx/rlen;
+      const dx=tyre.x-RAMP_X, dy=tyre.y-rampY;
+      const proj=(dx*rdx+dy*rdy)/rlen;
+      const dist=dx*rnx+dy*rny;
+
+      if(proj>0 && proj<rlen && dist>-tyre.r*0.5 && dist<tyre.r*1.6){
+        if(!tyre.hitRamp){
+          tyre.hitRamp=true;
+          const spd=Math.sqrt(tyre.vx*tyre.vx+tyre.vy*tyre.vy);
+          const boost=spd*1.16;
+          tyre.vx=Math.cos(ang)*boost;
+          tyre.vy=-Math.sin(ang)*boost*1.12;
+          tyre.rot += 1.3;
+        }
+      }
+    }
+
+    const bx=BATI_X_FIXED(), bhy=GY-batiH-4;
+    const dx=tyre.x-bx, dy=tyre.y-bhy;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    if(tyre.vy>0 && dist < batiHoleR*0.96 && tyre.y > bhy-22 && tyre.y < bhy+22){
+      tyre.active=false; tyre.landed=true; tyre.onGround=false;
+      onLand(dist,true); return;
+    }
+
+    if(tyre.y >= GY - tyre.r){
+      tyre.y = GY - tyre.r;
+      tyre.vy *= -0.33;
+      tyre.vx *= 0.64;
+      if(Math.abs(tyre.vy)<0.75 && Math.abs(tyre.vx)<0.55){
+        tyre.active=false; tyre.landed=true; tyre.onGround=true;
+        onLand(Math.abs(tyre.x - bx), false);
+      }
+    }
+    // Bounce off right wall
+    if(tyre.x + tyre.r >= W){
+      tyre.x = W - tyre.r;
+      tyre.wallBounces++;
+      tyre.vx *= -0.72;   // bounce back with some energy loss
+      tyre.rot += 1.8;
+      spawnParticles(W - tyre.r*2, tyre.y, '#888', '#555');
+      if(tyre.wallBounces > 4){
+        tyre.active=false; tyre.landed=true; tyre.onGround=true;
+        onLand(9999,false);
+      }
+    }
+    // Left wall — just end the round
+    if(tyre.x - tyre.r < -70){
+      tyre.active=false; tyre.landed=true; tyre.onGround=true;
+      tyre.x = tyre.r;
+      onLand(9999,false);
+    }
+  }
+
+  particles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life-=0.021; });
+  particles=particles.filter(p=>p.life>0);
+}
+
+// FIXED: Score is added ONLY when tyre drops PERFECTLY into the top hole of the bati
+function onLand(dist,inBati){
+  let pts=0,txt,col;
+  if(inBati){
+    pts=100;
+    txt='PERFECT!';
+    col='#ffeb3b';
+    spawnParticles(BATI_X_FIXED(), GY-batiH-12, '#ffeb3b', '#ffb300');
+  } else {
+    pts=0;
+    txt='MISS';
+    col='#f87171';
+  }
+
+  score += pts;
+  if(score > best){ best = score; document.getElementById('bt').textContent=best; }
+  document.getElementById('sc').textContent=score;
+
+  const animX = inBati ? BATI_X_FIXED() : tyre.x;
+  const animY = inBati ? GY-batiH-58 : tyre.y-38;
+  scoreAnims.push({text: txt + (pts>0 ? ` +${pts}` : ''), x:animX, y:animY, t:Date.now(), color:col});
+
+  if(round >= maxR){
+    setTimeout(()=>{
+      state='gameover';
+      const m=document.getElementById('msg');
+      m.innerHTML=`GAME OVER!<br>FINAL SCORE: ${score}<br><span style="font-size:13px;opacity:0.75">TAP SCREEN TO RESTART</span>`;
+      m.style.display='block';
+    },1400);
+  } else {
+    setTimeout(()=>{
+      round++;
+      document.getElementById('rnd').textContent=`ROUND ${round} / ${maxR}`;
+      newRound(); state='aiming';
+    },1550);
+  }
+}
+
+function launch(){
+  charging=false; state='flying';
+  tyre.x=ENG_X + ENG_R*0.62;
+  tyre.y=engY - ENG_R - 3;
+  const baseSpd = 4.5 + (W / 420) * 1.5;
+  const spd = baseSpd + power * 0.1;
+  tyre.vx=spd;
+  tyre.vy=-0.45;
+  tyre.active=true;
+  tyre.hitRamp=false;
+  power=0; pDir=1;
+  document.getElementById('pbarfill').style.height='0%';
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  drawSky();
+  drawGround();
+  drawBati();
+  drawRamp();
+  drawEngine();
+  drawFlyingTyre();
+  drawParticles();
+  drawScoreAnims();
+}
+
+function loop(){ update(); draw(); requestAnimationFrame(loop); }
+
+wrap.addEventListener('mousedown',()=>{
+  if(state==='aiming'){ state='charging'; charging=true; power=0; pDir=1; }
+  else if(state==='gameover'){
+    score=0; round=1;
+    document.getElementById('sc').textContent='0';
+    document.getElementById('rnd').textContent='ROUND 1 / '+maxR;
+    document.getElementById('msg').style.display='none';
+    newRound(); state='aiming';
+  }
+});
+wrap.addEventListener('mouseup',()=>{ if(state==='charging') launch(); });
+
+wrap.addEventListener('touchstart', e=>{ e.preventDefault(); wrap.dispatchEvent(new MouseEvent('mousedown')); }, {passive:false});
+wrap.addEventListener('touchend', e=>{ e.preventDefault(); wrap.dispatchEvent(new MouseEvent('mouseup')); }, {passive:false});
+
+loop();
+</script>
+
+</body>
+</html>
